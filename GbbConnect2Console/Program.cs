@@ -51,7 +51,7 @@ namespace GbbConnect2Console
                 };
                 try
                 {
-                    Task.Delay(Timeout.Infinite, cts.Token);.
+                    Task.Delay(Timeout.Infinite, cts.Token);
                 }
                 catch (TaskCanceledException)
                 {
