@@ -26,4 +26,4 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag "${REGISTRY}/${IMAGE_NAME}:$(date +%s)" --push
+      run: docker build . --file Dockerfile --tag "${REGISTRY}/${IMAGE_NAME}:${TIMESTAMP}-${SHA}" --push
