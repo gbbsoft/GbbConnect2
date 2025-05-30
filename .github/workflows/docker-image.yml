@@ -17,13 +17,25 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
     - name: Log in to the Container registry
       uses: docker/login-action@v3
       with:
         registry: ${{ env.REGISTRY }}
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build info for the Docker image
+      id: build-info
+      run: |
+        TIMESTAMP=$(TZ=UTC git show --no-patch --format='%cd' --date='format-local:%Y%m%d%H%M%S' "$SHA")
+        echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag "${REGISTRY}/${IMAGE_NAME}:${TIMESTAMP}-${SHA}" --push
