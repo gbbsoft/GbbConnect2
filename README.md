@@ -95,6 +95,10 @@ DriverNo="1" - ModBucTCP (wired-dongle)
 
 Remark: SerialNumber: it is dongle SN, not inverter SN!
 
+# GbbConnect on HA
+
+Add-on by MagicPants: https://github.com/stefanschoemaker/gbbconnect2-ha-addon
+
 # Script for  GbbConnect2Console on Linux (Debian 12 Example) (Author: https://github.com/SpengeSec)
 
 Script for compete setup of GbbConnect2Console: [https://github.com/Sp3nge/GbbConnect2Console-Installer](https://github.com/Sp3nge/GbbConnect2Console-Installer)
