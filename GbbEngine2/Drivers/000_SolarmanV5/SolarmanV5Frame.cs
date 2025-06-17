@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 namespace GbbEngine2.Drivers.SolarmanV5
 {
 
-    internal class SolarmanFrame
+    internal class SolarmanV5Frame
     {
         private UInt16 SequenceNumber;
         private byte[] Serial;
 
 
-        public SolarmanFrame(UInt16 _SequenceNumber, long InverterSerialNumber)
+        public SolarmanV5Frame(UInt16 _SequenceNumber, long InverterSerialNumber)
         {
             SequenceNumber = _SequenceNumber;
             Serial = BitConverter.GetBytes(InverterSerialNumber);

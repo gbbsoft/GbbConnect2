@@ -332,7 +332,7 @@ namespace GbbEngine2.Drivers.SolarmanV5
                 else
                     OurLog.OurLog(LogLevel.Information, $"Send ModBus: {BitConverter.ToString(write_data)}");
             }
-            var Frame = new SolarmanFrame(GetNextSequenceNumber(), SerialNumber);
+            var Frame = new SolarmanV5Frame(GetNextSequenceNumber(), SerialNumber);
             var OutBuf = Frame.CreateFrame(write_data);
 
             // Send
@@ -350,7 +350,7 @@ namespace GbbEngine2.Drivers.SolarmanV5
 
         private readonly static SemaphoreSlim _lock = new (1, 1);
 
-        private async Task<byte[]> InternalSend(SolarmanFrame Frame, byte[] OutBuf)
+        private async Task<byte[]> InternalSend(SolarmanV5Frame Frame, byte[] OutBuf)
         {
             ArgumentNullException.ThrowIfNull(Socket);
 
