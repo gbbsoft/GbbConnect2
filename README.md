@@ -97,6 +97,7 @@ Remark: SerialNumber: it is dongle SN, not inverter SN!
 
 # GbbConnect on HA
 
+Add-on by 0xDEADBEEF1337: https://github.com/KrzysztofHajdamowicz/gbbconnect2-ha-addon/
 Add-on by MagicPants: https://github.com/stefanschoemaker/gbbconnect2-ha-addon
 
 # Script for  GbbConnect2Console on Linux (Debian 12 Example) (Author: https://github.com/SpengeSec)
