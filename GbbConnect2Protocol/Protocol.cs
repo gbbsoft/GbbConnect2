@@ -3,7 +3,6 @@
 public class Header
 {
 
-    public Line[]? Lines { get; set; }
 
     /// <summary>
     /// Error: null -> no error
@@ -25,6 +24,9 @@ public class Header
 
     public int? SendLastLog { get; set; }
 
+    public string? SubInverterSN { get; set; }
+
+    public Line[]? Lines { get; set; }
 
     // =======================================
     // Device -> GbbOptimizer

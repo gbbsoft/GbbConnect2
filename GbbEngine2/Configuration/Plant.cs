@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Xml;
 
@@ -32,6 +33,10 @@ namespace GbbEngine2.Configuration
 
         [ObservableProperty]
         private long? m_SerialNumber;
+
+
+        public ObservableCollection<SubInverter> SubInverters { get; set; } = new();
+
 
         // ======================================
         // GbbOptimizer
@@ -117,8 +122,8 @@ namespace GbbEngine2.Configuration
             //    xml.WriteAttributeString("Password", GbbLib.Encryption.AES_Encrypt(cipher, IV, Password));
             //xml.WriteAttributeString("Cerbo_UseVRMConn", XmlConvert.ToString(Cerbo_UseVRMConn));
 
-            //foreach (var itm in Forecasts)
-            //    itm.WriteToXML(xml);
+            foreach (var itm in SubInverters)
+                itm.WriteToXML(xml);
 
 
             xml.WriteEndElement();
@@ -180,9 +185,9 @@ namespace GbbEngine2.Configuration
                     xml.Read();
                     while (xml.NodeType != XmlNodeType.EndElement && xml.NodeType != XmlNodeType.None)
                     {
-                        //if (xml.IsStartElement("Forecast"))
-                        //    ret.Forecasts.Add(Forecast.ReadFromXML(xml));
-                        //else
+                        if (xml.IsStartElement("SubInverter"))
+                            ret.SubInverters.Add(SubInverter.ReadFromXML(xml));
+                        else
                             xml.Skip();
 
                         xml.MoveToContent();

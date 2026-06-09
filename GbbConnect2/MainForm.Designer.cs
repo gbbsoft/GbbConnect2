@@ -34,11 +34,18 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
+            label7 = new Label();
+            SubInverters_ourDataGridView = new GbbLibWin.OurDataGridView();
+            serialNumberDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            dongleSerialNumberDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            addressIPDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            portNoDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            subInvertersBindingSource = new BindingSource(components);
+            plantsBindingSource = new BindingSource(components);
+            ParametersBindingSource = new BindingSource(components);
             groupBox2 = new GroupBox();
             label13 = new Label();
             textBox10 = new TextBox();
-            plantsBindingSource = new BindingSource(components);
-            ParametersBindingSource = new BindingSource(components);
             textBox11 = new TextBox();
             label14 = new Label();
             textBox4 = new TextBox();
@@ -62,6 +69,7 @@
             IsDisabled = new DataGridViewCheckBoxColumn();
             tabPage3 = new TabPage();
             groupBox4 = new GroupBox();
+            checkBox3 = new CheckBox();
             checkBox1 = new CheckBox();
             Log_tabPage2 = new TabPage();
             checkBox2 = new CheckBox();
@@ -85,12 +93,13 @@
             StopServer_button = new Button();
             timer1 = new System.Windows.Forms.Timer(components);
             Version_label = new Label();
-            checkBox3 = new CheckBox();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
-            groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)SubInverters_ourDataGridView).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)subInvertersBindingSource).BeginInit();
             ((System.ComponentModel.ISupportInitialize)plantsBindingSource).BeginInit();
             ((System.ComponentModel.ISupportInitialize)ParametersBindingSource).BeginInit();
+            groupBox2.SuspendLayout();
             groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)Plants_DataGridView).BeginInit();
             ((System.ComponentModel.ISupportInitialize)inverterInfoBindingSource).BeginInit();
@@ -117,6 +126,8 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(label7);
+            tabPage1.Controls.Add(SubInverters_ourDataGridView);
             tabPage1.Controls.Add(groupBox2);
             tabPage1.Controls.Add(bindingNavigator2);
             tabPage1.Controls.Add(groupBox1);
@@ -129,6 +140,72 @@
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Plants";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(11, 349);
+            label7.Name = "label7";
+            label7.Size = new Size(85, 15);
+            label7.TabIndex = 8;
+            label7.Text = "Slave inverters:";
+            // 
+            // SubInverters_ourDataGridView
+            // 
+            SubInverters_ourDataGridView.AutoGenerateColumns = false;
+            SubInverters_ourDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            SubInverters_ourDataGridView.Columns.AddRange(new DataGridViewColumn[] { serialNumberDataGridViewTextBoxColumn, dongleSerialNumberDataGridViewTextBoxColumn, addressIPDataGridViewTextBoxColumn, portNoDataGridViewTextBoxColumn });
+            SubInverters_ourDataGridView.DataSource = subInvertersBindingSource;
+            SubInverters_ourDataGridView.Location = new Point(11, 370);
+            SubInverters_ourDataGridView.Name = "SubInverters_ourDataGridView";
+            SubInverters_ourDataGridView.OurAskBeforeRowDelete = true;
+            SubInverters_ourDataGridView.OurPaste_BlockMultiLine = false;
+            SubInverters_ourDataGridView.Size = new Size(564, 116);
+            SubInverters_ourDataGridView.TabIndex = 9;
+            SubInverters_ourDataGridView.RowValidating += ourDataGridView1_RowValidating;
+            // 
+            // serialNumberDataGridViewTextBoxColumn
+            // 
+            serialNumberDataGridViewTextBoxColumn.DataPropertyName = "SerialNumber";
+            serialNumberDataGridViewTextBoxColumn.HeaderText = "Inverter SerialNumber";
+            serialNumberDataGridViewTextBoxColumn.Name = "serialNumberDataGridViewTextBoxColumn";
+            serialNumberDataGridViewTextBoxColumn.Width = 150;
+            // 
+            // dongleSerialNumberDataGridViewTextBoxColumn
+            // 
+            dongleSerialNumberDataGridViewTextBoxColumn.DataPropertyName = "DongleSerialNumber";
+            dongleSerialNumberDataGridViewTextBoxColumn.HeaderText = "Dongle SerialNumber";
+            dongleSerialNumberDataGridViewTextBoxColumn.Name = "dongleSerialNumberDataGridViewTextBoxColumn";
+            dongleSerialNumberDataGridViewTextBoxColumn.Width = 150;
+            // 
+            // addressIPDataGridViewTextBoxColumn
+            // 
+            addressIPDataGridViewTextBoxColumn.DataPropertyName = "AddressIP";
+            addressIPDataGridViewTextBoxColumn.HeaderText = "AddressIP";
+            addressIPDataGridViewTextBoxColumn.Name = "addressIPDataGridViewTextBoxColumn";
+            // 
+            // portNoDataGridViewTextBoxColumn
+            // 
+            portNoDataGridViewTextBoxColumn.DataPropertyName = "PortNo";
+            portNoDataGridViewTextBoxColumn.HeaderText = "PortNo";
+            portNoDataGridViewTextBoxColumn.Name = "portNoDataGridViewTextBoxColumn";
+            portNoDataGridViewTextBoxColumn.Width = 50;
+            // 
+            // subInvertersBindingSource
+            // 
+            subInvertersBindingSource.DataMember = "SubInverters";
+            subInvertersBindingSource.DataSource = plantsBindingSource;
+            subInvertersBindingSource.AddingNew += subInvertersBindingSource_AddingNew;
+            // 
+            // plantsBindingSource
+            // 
+            plantsBindingSource.DataMember = "Plants";
+            plantsBindingSource.DataSource = ParametersBindingSource;
+            plantsBindingSource.AddingNew += plantsBindingSource_AddingNew;
+            // 
+            // ParametersBindingSource
+            // 
+            ParametersBindingSource.DataSource = typeof(GbbEngine2.Configuration.Parameters);
             // 
             // groupBox2
             // 
@@ -163,16 +240,6 @@
             textBox10.Name = "textBox10";
             textBox10.Size = new Size(178, 23);
             textBox10.TabIndex = 11;
-            // 
-            // plantsBindingSource
-            // 
-            plantsBindingSource.DataMember = "Plants";
-            plantsBindingSource.DataSource = ParametersBindingSource;
-            plantsBindingSource.AddingNew += plantsBindingSource_AddingNew;
-            // 
-            // ParametersBindingSource
-            // 
-            ParametersBindingSource.DataSource = typeof(GbbEngine2.Configuration.Parameters);
             // 
             // textBox11
             // 
@@ -262,9 +329,9 @@
             label3.AutoSize = true;
             label3.Location = new Point(5, 83);
             label3.Name = "label3";
-            label3.Size = new Size(153, 15);
+            label3.Size = new Size(154, 15);
             label3.TabIndex = 6;
-            label3.Text = "Logger serial number (SN)*:";
+            label3.Text = "Dongle serial number (SN)*:";
             // 
             // textBox1
             // 
@@ -386,6 +453,17 @@
             groupBox4.TabIndex = 10;
             groupBox4.TabStop = false;
             groupBox4.Text = "Server";
+            // 
+            // checkBox3
+            // 
+            checkBox3.AutoSize = true;
+            checkBox3.DataBindings.Add(new Binding("Checked", ParametersBindingSource, "ClearOldLogs", true));
+            checkBox3.Location = new Point(27, 47);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(196, 19);
+            checkBox3.TabIndex = 4;
+            checkBox3.Text = "Clear logs created 2 months ago";
+            checkBox3.UseVisualStyleBackColor = true;
             // 
             // checkBox1
             // 
@@ -636,17 +714,6 @@
             Version_label.TabIndex = 4;
             Version_label.Text = "Version:";
             // 
-            // checkBox3
-            // 
-            checkBox3.AutoSize = true;
-            checkBox3.DataBindings.Add(new Binding("Checked", ParametersBindingSource, "ClearOldLogs", true));
-            checkBox3.Location = new Point(27, 47);
-            checkBox3.Name = "checkBox3";
-            checkBox3.Size = new Size(196, 19);
-            checkBox3.TabIndex = 4;
-            checkBox3.Text = "Clear logs created 2 months ago";
-            checkBox3.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -666,10 +733,12 @@
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
-            groupBox2.ResumeLayout(false);
-            groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)SubInverters_ourDataGridView).EndInit();
+            ((System.ComponentModel.ISupportInitialize)subInvertersBindingSource).EndInit();
             ((System.ComponentModel.ISupportInitialize)plantsBindingSource).EndInit();
             ((System.ComponentModel.ISupportInitialize)ParametersBindingSource).EndInit();
+            groupBox2.ResumeLayout(false);
+            groupBox2.PerformLayout();
             groupBox1.ResumeLayout(false);
             groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)Plants_DataGridView).EndInit();
@@ -742,5 +811,12 @@
         private GbbLibWin.OurDataGridViewComboBoxColumn2 Inverter;
         private DataGridViewCheckBoxColumn IsDisabled;
         private CheckBox checkBox3;
+        private Label label7;
+        private GbbLibWin.OurDataGridView SubInverters_ourDataGridView;
+        private BindingSource subInvertersBindingSource;
+        private DataGridViewTextBoxColumn serialNumberDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn dongleSerialNumberDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn addressIPDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn portNoDataGridViewTextBoxColumn;
     }
 }

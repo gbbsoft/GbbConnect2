@@ -146,6 +146,34 @@ namespace GbbConnect2
         }
 
         // ======================================
+        // SubEngines
+        // ======================================
+
+        private void subInvertersBindingSource_AddingNew(object sender, System.ComponentModel.AddingNewEventArgs e)
+        {
+            if (this.plantsBindingSource.Current != null)
+            {
+                SubInverter ret = new();
+                e.NewObject = ret;
+            }
+        }
+
+        private void ourDataGridView1_RowValidating(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            if (this.plantsBindingSource.Current != null)
+            {
+                Plant parent = (Plant)this.plantsBindingSource.Current;
+                // check new/change row
+                if (e.RowIndex >= 0
+                && !SubInverters_ourDataGridView.Rows[e.RowIndex].IsNewRow
+                && e.RowIndex < parent.SubInverters.Count)
+                    parent.SubInverters[e.RowIndex].OurCheckDataForUI();
+            }
+
+        }
+
+
+        // ======================================
         // Tests
         // ======================================
 
@@ -178,7 +206,7 @@ namespace GbbConnect2
 
                                 case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i001_ModbusTCP:
                                     {
-                                        GbbEngine2.Drivers.SolarmanV5.ModbusTcpDriver sm = new (Program.Parameters, itm.AddressIP, itm.PortNo, itm.SerialNumber, this);
+                                        GbbEngine2.Drivers.SolarmanV5.ModbusTcpDriver sm = new(Program.Parameters, itm.AddressIP, itm.PortNo, itm.SerialNumber, this);
                                         sm.Connect();
                                         drv = sm;
                                     }
@@ -429,5 +457,6 @@ namespace GbbConnect2
         {
             this.Invoke(action);
         }
+
     }
 }

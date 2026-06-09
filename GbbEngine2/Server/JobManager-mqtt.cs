@@ -325,12 +325,36 @@ namespace GbbEngine2.Server
                     IDriver? drv = null;
                     try
                     {
+                        string? addressIP = Plant.AddressIP;
+                        int? portNo = Plant.PortNo;
+                        long? serialNo = Plant.SerialNumber;
+
+                        // send to subInverter?
+                        if (!string.IsNullOrWhiteSpace(Header.SubInverterSN))
+                        {
+                            bool OK = false;
+                            foreach (var inv in Plant.SubInverters)
+                            {
+                                if (inv.SerialNumber.ToString() == Header.SubInverterSN.Trim())
+                                {
+                                    addressIP = inv.AddressIP;
+                                    portNo = inv.PortNo;
+                                    serialNo = inv.DongleSerialNumber;
+                                    OK = true;
+                                    break;
+                                }
+                            }
+                            if (!OK)
+                                throw new ApplicationException($"Inverter SerialNumber not found: {Header.SubInverterSN} on Slave Inverters list!");
+                        }
+
+
                         // get driver
                         switch (Plant.DriverNo)
                         {
                             case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i000_SolarmanV5:
                                 {
-                                    SolarmanV5Driver sm = new SolarmanV5Driver(Parameters, Plant.AddressIP, Plant.PortNo, Plant.SerialNumber, log);
+                                    SolarmanV5Driver sm = new SolarmanV5Driver(Parameters, addressIP, portNo, serialNo, log);
                                     sm.Connect();
                                     drv = sm;
                                 }
@@ -338,7 +362,7 @@ namespace GbbEngine2.Server
 
                             case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i001_ModbusTCP:
                                 {
-                                    ModbusTcpDriver sm = new ModbusTcpDriver(Parameters, Plant.AddressIP, Plant.PortNo, Plant.SerialNumber, log);
+                                    ModbusTcpDriver sm = new ModbusTcpDriver(Parameters, addressIP, portNo, serialNo, log);
                                     sm.Connect();
                                     drv = sm;
                                 }
