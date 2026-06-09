@@ -95,6 +95,36 @@ DriverNo="1" - ModBucTCP (wired-dongle)
 
 Remark: SerialNumber: it is dongle SN, not inverter SN!
 
+Sample with SubInverters:
+```
+<?xml version="1.0" encoding="utf-8"?>
+<Parameters Version="1"
+            Server_AutoStart="0"
+            IsVerboseLog="1"
+            IsDriverLog="1"
+            IsDriverLog2="1"
+            ClearOldLogs="1">
+	<Plant Version="1"
+	       Number="1"
+	       Name="My Main Plant"
+	       DriverNo="0"
+	       IsDisabled="0"
+	       AddressIP="1.2.3.4"
+	       PortNo="8899"
+	       SerialNumber="123456"
+	       GbbOptimizer_PlantId="<PlantId>"
+	       GbbOptimizer_PlantToken="<PlantToken>"
+	       GbbOptimizer_Mqtt_Address="gbboptimizerX-mqtt.gbbsoft.pl"
+	       GbbOptimizer_Mqtt_Port="8883">
+		<SubInverter Version="1"
+		             AddressIP="1.2.3.5"
+		             PortNo="8899"
+		             SerialNumber="123"
+		             DongleSerialNumber="321"/>
+	</Plant>
+</Parameters>
+```
+
 # GbbConnect on HA
 
 Add-on by 0xDEADBEEF1337: https://github.com/KrzysztofHajdamowicz/gbbconnect2-ha-addon/
