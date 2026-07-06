@@ -327,7 +327,7 @@ namespace GbbEngine2.Server
                     {
                         string? addressIP = Plant.AddressIP;
                         int? portNo = Plant.PortNo;
-                        long? serialNo = Plant.SerialNumber;
+                        long? dongielSerialNo = Plant.SerialNumber;
 
                         // send to subInverter?
                         if (!string.IsNullOrWhiteSpace(Header.SubInverterSN))
@@ -339,7 +339,7 @@ namespace GbbEngine2.Server
                                 {
                                     addressIP = inv.AddressIP;
                                     portNo = inv.PortNo;
-                                    serialNo = inv.DongleSerialNumber;
+                                    dongielSerialNo = inv.DongleSerialNumber;
                                     OK = true;
                                     break;
                                 }
@@ -354,7 +354,7 @@ namespace GbbEngine2.Server
                         {
                             case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i000_SolarmanV5:
                                 {
-                                    SolarmanV5Driver sm = new SolarmanV5Driver(Parameters, addressIP, portNo, serialNo, log);
+                                    SolarmanV5Driver sm = new SolarmanV5Driver(Parameters, addressIP, portNo, dongielSerialNo, log);
                                     sm.Connect();
                                     drv = sm;
                                 }
@@ -362,7 +362,7 @@ namespace GbbEngine2.Server
 
                             case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i001_ModbusTCP:
                                 {
-                                    ModbusTcpDriver sm = new ModbusTcpDriver(Parameters, addressIP, portNo, serialNo, log);
+                                    ModbusTcpDriver sm = new ModbusTcpDriver(Parameters, addressIP, portNo, dongielSerialNo, log);
                                     sm.Connect();
                                     drv = sm;
                                 }

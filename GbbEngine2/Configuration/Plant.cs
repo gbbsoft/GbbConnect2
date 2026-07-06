@@ -32,7 +32,7 @@ namespace GbbEngine2.Configuration
         private int? m_PortNo = 8899;
 
         [ObservableProperty]
-        private long? m_SerialNumber;
+        private long? m_SerialNumber; // dongiel SerialNumber
 
 
         public ObservableCollection<SubInverter> SubInverters { get; set; } = new();
