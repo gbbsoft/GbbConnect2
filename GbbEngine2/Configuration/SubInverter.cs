@@ -7,6 +7,11 @@ namespace GbbEngine2.Configuration
     public partial class SubInverter : ObservableObject
     {
 
+        /// <summary>
+        /// Last will if connection to GbbOptimizer is lost
+        /// </summary>
+        public GbbConnect2Protocol.Line[]? LinesOnNoInvSetup;
+
         // ======================================
         // Inverter
         // ======================================

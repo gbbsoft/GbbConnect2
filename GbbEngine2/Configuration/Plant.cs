@@ -61,6 +61,19 @@ namespace GbbEngine2.Configuration
         internal PlantState? PlantState;
 
 
+        /// <summary>
+        /// Last send inverter sertup
+        /// </summary>
+        internal DateTime? LastIsInvSetup; // local time
+
+
+        /// <summary>
+        /// commands to send when no connection from GbbOptimizer (no inverter sertup up to x:10)
+        /// last will if connection to GbbOptimizer is lost
+        /// </summary>
+        internal GbbConnect2Protocol.Line[]? LinesOnNoInvSetup;
+
+
         // ======================================
         // Constructor
         // ======================================

@@ -3,6 +3,9 @@
 public class Header
 {
 
+    public const int CURR_PROTOCOL_VERSION = 2;
+
+    public int? ProtocolVersion { get; set; }
 
     /// <summary>
     /// Error: null -> no error
@@ -17,6 +20,14 @@ public class Header
     // =======================================
     // GbbOptimizer -> Device
     // =======================================
+    public string? SubInverterSN { get; set; }
+
+    public Line[]? Lines { get; set; }
+
+    public int IsInvSetup { get; set; }
+
+    public Line[]? LinesOnNoInvSetup { get; set; }
+
     public const string LogLevel_ONLY_ERRORS = "OnlyErrors";
     public const string LogLevel_MIN = "Min";
     public const string LogLevel_MAX = "Max";
@@ -24,15 +35,16 @@ public class Header
 
     public int? SendLastLog { get; set; }
 
-    public string? SubInverterSN { get; set; }
-
-    public Line[]? Lines { get; set; }
 
     // =======================================
     // Device -> GbbOptimizer
     // =======================================
-    public string? GbbVersion { get; set; }
-    public string? GbbEnvironment { get; set; }
+    public string? GbbVersion { get; set; } // old name
+    public string? ClientVersion { get; set; }
+    public string? GbbEnvironment { get; set; } // old name
+    public string? ClientEnvironment { get; set; }
+    public string? ClientName { get; set; }
+    public string? ClientInfo { get; set; }
 
     public string? LastLog { get; set; }
 

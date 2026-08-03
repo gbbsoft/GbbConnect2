@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json;
+using System.Xml;
 using GbbConnect2Protocol;
 using GbbEngine2.Configuration;
 using GbbEngine2.Drivers;
@@ -220,6 +222,38 @@ namespace GbbEngine2.Server
                     }
 
 
+                    // ======================================
+                    // check if no invSetup from GbbOptimizer
+                    // ======================================
+                    if (LoopStartTime.Minute>10)
+                    {
+                        foreach (var plant in Parameters.Plants)
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            try
+                            {
+                                // check if any InvSetup from GbbOptimizer in this hour
+                                if (plant.LastIsInvSetup != null 
+                                && plant.LastIsInvSetup.Value < new DateTime(LoopStartTime.Year, LoopStartTime.Month, LoopStartTime.Day, LoopStartTime.Hour, 0,0))
+                                {
+                                    log.OurLog(LogLevel.Information, $"{plant.Name}: No InvSetup from GbbOptimizer in this hour, sending NoConn lines");
+                                    await OurSendNoConnLines(Parameters, plant, log);
+
+                                    // do it only once
+                                    plant.LastIsInvSetup = null;
+                                }
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                throw;
+                            }
+                            catch (Exception ex)
+                            {
+                                log.OurLog(LogLevel.Error, $"{plant.Name}: {ex.Message}");
+                            }
+                        }
+                    }
+
 
                     // =====================================
                     // try keep 1min between keep-alive
@@ -285,8 +319,11 @@ namespace GbbEngine2.Server
                 var Header = JsonSerializer.Deserialize<Header>(seg, jsonOptions);
                 if (Header != null)
                 {
-                    Header.GbbVersion = Parameters.APP_VERSION;
-                    Header.GbbEnvironment = Parameters.APP_ENVIRONMENT;
+                    Header.ProtocolVersion = Header.CURR_PROTOCOL_VERSION;
+                    Header.ClientVersion = Parameters.APP_VERSION;
+                    Header.ClientEnvironment = Parameters.APP_ENVIRONMENT;
+                    Header.ClientName = Parameters.APP_NAME;
+                    Header.ClientInfo = $"Inverter IP: {Plant.AddressIP}, Program IP: {Parameters.MyIpAddress}";
 
                     // ==========================
                     // Change log level
@@ -320,105 +357,56 @@ namespace GbbEngine2.Server
                     }
 
                     // ==========================
+                    // find parameters
+                    // ==========================
+                    string? addressIP = Plant.AddressIP;
+                    int? portNo = Plant.PortNo;
+                    long? dongielSerialNo = Plant.SerialNumber;
+
+                    // send to subInverter?
+                    if (!string.IsNullOrWhiteSpace(Header.SubInverterSN))
+                    {
+                        bool OK = false;
+                        foreach (var inv in Plant.SubInverters)
+                        {
+                            if (inv.SerialNumber.ToString() == Header.SubInverterSN.Trim())
+                            {
+                                addressIP = inv.AddressIP;
+                                portNo = inv.PortNo;
+                                dongielSerialNo = inv.DongleSerialNumber;
+
+                                // save last will
+                                if (Header.LinesOnNoInvSetup != null)
+                                {
+                                    inv.LinesOnNoInvSetup = Header.LinesOnNoInvSetup;
+                                    if (Parameters.IsDriverLog)
+                                        log.OurLog(LogLevel.Information, $"Receiving LinesOnNoInvSetup for dongle SN={inv.DongleSerialNumber}");
+                                }
+
+                                OK = true;
+                                break;
+                            }
+                        }
+                        if (!OK)
+                            throw new ApplicationException($"Inverter SerialNumber not found: {Header.SubInverterSN} on Slave Inverters list!");
+                    }
+                    else if (Header.LinesOnNoInvSetup != null)
+                    {
+                        // save last will
+                        Plant.LinesOnNoInvSetup = Header.LinesOnNoInvSetup;
+                        if (Parameters.IsDriverLog)
+                            log.OurLog(LogLevel.Information, $"Receiving LinesOnNoInvSetup for master dongle");
+                    }
+
+
+                    if (Header.IsInvSetup!=0)
+                        Plant.LastIsInvSetup = DateTime.Now;
+
+
+                    // ==========================
                     // process lines
                     // ==========================
-                    IDriver? drv = null;
-                    try
-                    {
-                        string? addressIP = Plant.AddressIP;
-                        int? portNo = Plant.PortNo;
-                        long? dongielSerialNo = Plant.SerialNumber;
-
-                        // send to subInverter?
-                        if (!string.IsNullOrWhiteSpace(Header.SubInverterSN))
-                        {
-                            bool OK = false;
-                            foreach (var inv in Plant.SubInverters)
-                            {
-                                if (inv.SerialNumber.ToString() == Header.SubInverterSN.Trim())
-                                {
-                                    addressIP = inv.AddressIP;
-                                    portNo = inv.PortNo;
-                                    dongielSerialNo = inv.DongleSerialNumber;
-                                    OK = true;
-                                    break;
-                                }
-                            }
-                            if (!OK)
-                                throw new ApplicationException($"Inverter SerialNumber not found: {Header.SubInverterSN} on Slave Inverters list!");
-                        }
-
-
-                        // get driver
-                        switch (Plant.DriverNo)
-                        {
-                            case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i000_SolarmanV5:
-                                {
-                                    SolarmanV5Driver sm = new SolarmanV5Driver(Parameters, addressIP, portNo, dongielSerialNo, log);
-                                    sm.Connect();
-                                    drv = sm;
-                                }
-                                break;
-
-                            case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i001_ModbusTCP:
-                                {
-                                    ModbusTcpDriver sm = new ModbusTcpDriver(Parameters, addressIP, portNo, dongielSerialNo, log);
-                                    sm.Connect();
-                                    drv = sm;
-                                }
-                                break;
-
-                            case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i999_Random:
-                                drv = new RandomDriver();
-                                break;
-
-                            default:
-                                throw new ApplicationException("Unknown driver no: " + Plant.DriverNo);
-                        }
-
-                        if (Header.Lines != null)
-                        {
-                            for (int i = 0; i < Header.Lines.Length; i++)
-                            {
-                                var line = Header.Lines[i];
-                                if (line != null)
-                                {
-                                    try
-                                    {
-                                        if (line.Modbus != null)
-                                        {
-                                            // send to device
-                                            line.Modbus = GbbLibSmall2.Convert.ButesToString(await drv.SendDataToDevice(GbbLibSmall2.Convert.StringToBytes(line.Modbus)));
-                                        }
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        line.Error = ex.Message;
-                                        // clear rest  Modbus data
-                                        for (; i < Header.Lines.Length; i++)
-                                            Header.Lines[i].Modbus = null;
-                                        break;
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        Header.Error = ex.Message;
-                        if (Header.Lines!=null)
-                            for (int i = 0; i < Header.Lines.Length; i++)
-                                Header.Lines[i].Modbus = null;
-                    }
-                    finally
-                    {
-                        if (drv != null)
-                        {
-                            drv.Dispose();
-                            drv = null;
-                        }
-                    }
+                    await SendLines(Parameters, Plant, log, Header, addressIP, portNo, dongielSerialNo);
 
                     // ==========================
                     // To log without LastLog
@@ -549,5 +537,145 @@ namespace GbbEngine2.Server
 
         }
 
+
+        /// <summary>
+        /// send last will data to inverter if connection with GbbOptimizer is lost
+        /// </summary>
+        /// <param name="Parameters"></param>
+        /// <param name="Plant"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        public static async Task OurSendNoConnLines(Parameters Parameters, Plant Plant, IOurLog log)
+        {
+            if (Plant.LinesOnNoInvSetup != null)
+            {
+                log.OurLog(LogLevel.Information, $"{Plant.Name}: Sending NoConn lines to master dongle");
+
+                Header Header = new Header();
+                Header.Lines = Plant.LinesOnNoInvSetup;
+                await SendLines(Parameters, Plant, log, Header, Plant.AddressIP, Plant.PortNo, Plant.SerialNumber);
+
+                // log errors
+                if (Header.Error!=null)
+                    log.OurLog(LogLevel.Error, $"{Plant.Name}: {Header.Error}");
+                if (Header.Lines!=null)
+                {
+                    for (int i = 0; i < Header.Lines.Length; i++)
+                    {
+                        var line = Header.Lines[i];
+                        if (line != null && line.Error != null)
+                            log.OurLog(LogLevel.Error, $"{Plant.Name}: LineNo={line.LineNo}: {line.Error}");
+                    }
+                }
+                // send only once
+                Plant.LinesOnNoInvSetup = null;
+            }
+            foreach (var inv in Plant.SubInverters)
+            {
+                log.OurLog(LogLevel.Information, $"{Plant.Name}: Sending NoConn lines to dongle SN={inv.DongleSerialNumber}");
+
+                Header Header = new Header();
+                Header.Lines = inv.LinesOnNoInvSetup;
+                await SendLines(Parameters, Plant, log, Header, inv.AddressIP, inv.PortNo, inv.DongleSerialNumber);
+
+                // log errors
+                if (Header.Error != null)
+                    log.OurLog(LogLevel.Error, $"{Plant.Name}: SN={inv.DongleSerialNumber}: {Header.Error}");
+                if (Header.Lines != null)
+                {
+                    for (int i = 0; i < Header.Lines.Length; i++)
+                    {
+                        var line = Header.Lines[i];
+                        if (line != null && line.Error != null)
+                            log.OurLog(LogLevel.Error, $"{Plant.Name}: SN={inv.DongleSerialNumber}: LineNo={line.LineNo}: {line.Error}");
+                    }
+                }
+                // send only once
+                inv.LinesOnNoInvSetup = null;
+            }
+
+        }
+
+        private static async Task SendLines(Parameters Parameters, Plant Plant, IOurLog log, Header Header, string? addressIP, int? portNo, long? dongielSerialNo)
+        {
+            // ==========================
+            // process lines
+            // ==========================
+            IDriver? drv = null;
+            try
+            {
+
+
+                // get driver
+                switch (Plant.DriverNo)
+                {
+                    case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i000_SolarmanV5:
+                        {
+                            SolarmanV5Driver sm = new SolarmanV5Driver(Parameters, addressIP, portNo, dongielSerialNo, log);
+                            sm.Connect();
+                            drv = sm;
+                        }
+                        break;
+
+                    case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i001_ModbusTCP:
+                        {
+                            ModbusTcpDriver sm = new ModbusTcpDriver(Parameters, addressIP, portNo, dongielSerialNo, log);
+                            sm.Connect();
+                            drv = sm;
+                        }
+                        break;
+
+                    case (int)GbbEngine2.Drivers.DriverInfo.Drivers.i999_Random:
+                        drv = new RandomDriver();
+                        break;
+
+                    default:
+                        throw new ApplicationException("Unknown driver no: " + Plant.DriverNo);
+                }
+
+                if (Header.Lines != null)
+                {
+                    for (int i = 0; i < Header.Lines.Length; i++)
+                    {
+                        var line = Header.Lines[i];
+                        if (line != null)
+                        {
+                            try
+                            {
+                                if (line.Modbus != null)
+                                {
+                                    // send to device
+                                    line.Modbus = GbbLibSmall2.Convert.ButesToString(await drv.SendDataToDevice(GbbLibSmall2.Convert.StringToBytes(line.Modbus)));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                line.Error = ex.Message;
+                                // clear rest  Modbus data
+                                for (; i < Header.Lines.Length; i++)
+                                    Header.Lines[i].Modbus = null;
+                                break;
+                            }
+                        }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Header.Error = ex.Message;
+                if (Header.Lines != null)
+                    for (int i = 0; i < Header.Lines.Length; i++)
+                        Header.Lines[i].Modbus = null;
+            }
+            finally
+            {
+                if (drv != null)
+                {
+                    drv.Dispose();
+                    drv = null;
+                }
+            }
+        }
     }
 }

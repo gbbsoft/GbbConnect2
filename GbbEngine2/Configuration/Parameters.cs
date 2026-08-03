@@ -3,6 +3,8 @@ using GbbLibSmall;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +14,8 @@ namespace GbbEngine2.Configuration
 {
     public partial class Parameters : ObservableObject
     {
-        public const string APP_VERSION = "1.3.0";
+        public const string APP_NAME = "GbbConnect2";
+        public const string APP_VERSION = "2.0.0";
         public static string APP_ENVIRONMENT = "Library";
 
         // ======================================
@@ -229,6 +232,45 @@ namespace GbbEngine2.Configuration
 
             return System.IO.Path.Combine(OurGetUserBaseDirectory(), "Parameters.xml");
         }
+
+        // ======================================
+        // Network
+        // ======================================
+
+        private static string? m_MyIpAddress = null;
+
+        public static string? MyIpAddress
+        {
+            get
+            {
+                if (m_MyIpAddress == null)
+                {
+
+                    var host = Dns.GetHostEntry(Dns.GetHostName());
+                    foreach (var ip in host.AddressList)
+                    {
+                        if (ip.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            m_MyIpAddress = ip.ToString();
+                            break;
+                        }
+                    }
+                    if (m_MyIpAddress == null)
+                    {
+                        foreach (var ip in host.AddressList)
+                        {
+                            if (ip.AddressFamily == AddressFamily.InterNetworkV6)
+                            {
+                                m_MyIpAddress = ip.ToString();
+                                break;
+                            }
+                        }
+                    }
+                }
+                return m_MyIpAddress;
+            }
+        }
+
 
         // ======================================
         // Clear log
